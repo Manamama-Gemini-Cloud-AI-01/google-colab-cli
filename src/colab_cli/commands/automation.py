@@ -16,6 +16,8 @@ import datetime
 import os
 import sys
 import json
+import shutil
+import subprocess
 from typing import Optional, List
 import typer
 from rich.console import Console
@@ -96,9 +98,11 @@ def run_automation(
 
             if not data.get("success"):
                 uri = data.get("unauthorized_redirect_uri")
-                typer.echo(
-                    f"\n[colab] REQUIRED: Google Drive Authorization needed.\nPlease visit:\n\n{uri}\n"
-                )
+                typer.echo("\n[colab] REQUIRED: Google Drive Authorization needed.")
+                typer.echo(f"Authorization URL: {uri}\n")
+                opener = shutil.which("termux-open") or shutil.which("xdg-open")
+                if opener:
+                    subprocess.run([opener, uri])
                 state.history.log_event(s.name, "drive_auth_needed", {"uri": uri})
                 sys.stdout.write("Press Enter after you have granted access... ")
                 sys.stdout.flush()
